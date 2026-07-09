@@ -41,6 +41,18 @@ def init_db():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS reminders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_id INTEGER,
+            title TEXT NOT NULL,
+            due_date TEXT,
+            status TEXT DEFAULT 'Bekliyor',
+            notes TEXT,
+            FOREIGN KEY(client_id) REFERENCES clients(id)
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -48,13 +60,11 @@ def init_db():
 def add_client(name, tax_no, tax_office, phone, email, contact_person, notes):
     conn = get_connection()
     cur = conn.cursor()
-
     cur.execute("""
         INSERT INTO clients
         (name, tax_no, tax_office, phone, email, contact_person, notes)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (name, tax_no, tax_office, phone, email, contact_person, notes))
-
     conn.commit()
     conn.close()
 
@@ -62,13 +72,11 @@ def add_client(name, tax_no, tax_office, phone, email, contact_person, notes):
 def update_client(client_id, name, tax_no, tax_office, phone, email, contact_person, notes):
     conn = get_connection()
     cur = conn.cursor()
-
     cur.execute("""
         UPDATE clients
         SET name=?, tax_no=?, tax_office=?, phone=?, email=?, contact_person=?, notes=?
         WHERE id=?
     """, (name, tax_no, tax_office, phone, email, contact_person, notes, client_id))
-
     conn.commit()
     conn.close()
 
@@ -76,9 +84,7 @@ def update_client(client_id, name, tax_no, tax_office, phone, email, contact_per
 def delete_client(client_id):
     conn = get_connection()
     cur = conn.cursor()
-
     cur.execute("DELETE FROM clients WHERE id=?", (client_id,))
-
     conn.commit()
     conn.close()
 
@@ -86,13 +92,11 @@ def delete_client(client_id):
 def list_clients():
     conn = get_connection()
     cur = conn.cursor()
-
     cur.execute("""
         SELECT id, name, tax_no, tax_office, phone, email, contact_person
         FROM clients
         ORDER BY name ASC
     """)
-
     rows = cur.fetchall()
     conn.close()
     return rows
@@ -101,41 +105,25 @@ def list_clients():
 def get_client(client_id):
     conn = get_connection()
     cur = conn.cursor()
-
     cur.execute("""
         SELECT id, name, tax_no, tax_office, phone, email, contact_person, notes
         FROM clients
         WHERE id=?
     """, (client_id,))
-
     row = cur.fetchone()
     conn.close()
     return row
 
 
-def count_clients():
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT COUNT(*) FROM clients")
-    count = cur.fetchone()[0]
-
-    conn.close()
-    return count
-
-
 def add_document(client_id, file_name, file_path, category):
     conn = get_connection()
     cur = conn.cursor()
-
     upload_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     cur.execute("""
         INSERT INTO documents
         (client_id, file_name, file_path, category, upload_date)
         VALUES (?, ?, ?, ?, ?)
     """, (client_id, file_name, file_path, category, upload_date))
-
     conn.commit()
     conn.close()
 
@@ -143,7 +131,6 @@ def add_document(client_id, file_name, file_path, category):
 def list_documents():
     conn = get_connection()
     cur = conn.cursor()
-
     cur.execute("""
         SELECT documents.id, clients.name, documents.file_name,
                documents.category, documents.upload_date, documents.file_path
@@ -151,7 +138,6 @@ def list_documents():
         LEFT JOIN clients ON clients.id = documents.client_id
         ORDER BY documents.upload_date DESC
     """)
-
     rows = cur.fetchall()
     conn.close()
     return rows
@@ -160,11 +146,20 @@ def list_documents():
 def delete_document(document_id):
     conn = get_connection()
     cur = conn.cursor()
-
     cur.execute("DELETE FROM documents WHERE id=?", (document_id,))
-
     conn.commit()
     conn.close()
+
+
+def count_clients():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM clients")
+    count = cur.fetchone()[0]
+    conn.close()
+    return count
+
+
 def count_documents():
     conn = get_connection()
     cur = conn.cursor()
@@ -172,12 +167,12 @@ def count_documents():
     count = cur.fetchone()[0]
     conn.close()
     return count
-def count_clients():
+
+
+def count_reminders():
     conn = get_connection()
     cur = conn.cursor()
-
-    cur.execute("SELECT COUNT(*) FROM clients")
+    cur.execute("SELECT COUNT(*) FROM reminders")
     count = cur.fetchone()[0]
-
     conn.close()
     return count
