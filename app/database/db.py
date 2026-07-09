@@ -176,3 +176,36 @@ def count_reminders():
     count = cur.fetchone()[0]
     conn.close()
     return count
+def add_reminder(client_id, title, due_date, status, notes):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO reminders
+        (client_id, title, due_date, status, notes)
+        VALUES (?, ?, ?, ?, ?)
+    """, (client_id, title, due_date, status, notes))
+    conn.commit()
+    conn.close()
+
+
+def list_reminders():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT reminders.id, clients.name, reminders.title,
+               reminders.due_date, reminders.status, reminders.notes
+        FROM reminders
+        LEFT JOIN clients ON clients.id = reminders.client_id
+        ORDER BY reminders.due_date ASC
+    """)
+    rows = cur.fetchall()
+    conn.close()
+    return rows
+
+
+def delete_reminder(reminder_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM reminders WHERE id=?", (reminder_id,))
+    conn.commit()
+    conn.close()
