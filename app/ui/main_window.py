@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.ui.clients_page import ClientsPage
+from app.ui.documents_page import DocumentsPage
 
 
 class MainWindow(QMainWindow):
@@ -25,7 +26,7 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self.simple_page("AI Asistan", "Doğal dil ile görev ve hatırlatma oluşturacağız."))
         self.pages.addWidget(ClientsPage())
         self.pages.addWidget(self.simple_page("Hatırlatıcılar", "Hatırlatıcı modülü burada olacak."))
-        self.pages.addWidget(self.simple_page("Evrak", "Evrak takip modülü burada olacak."))
+        self.pages.addWidget(DocumentsPage())
         self.pages.addWidget(self.simple_page("Vergi Takvimi", "Vergi takvimi burada olacak."))
 
         root_layout.addWidget(sidebar)
