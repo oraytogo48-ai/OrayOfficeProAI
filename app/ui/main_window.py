@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
 
 from app.ui.clients_page import ClientsPage
 from app.ui.documents_page import DocumentsPage
+from app.database.db import count_clients, count_documents
 
 
 class MainWindow(QMainWindow):
@@ -85,8 +86,8 @@ class MainWindow(QMainWindow):
         cards = QHBoxLayout()
         cards.addWidget(self.card("📌 Bugünkü İşler", "0", "Bekleyen görev"))
         cards.addWidget(self.card("⏰ Hatırlatıcılar", "0", "Aktif hatırlatma"))
-        cards.addWidget(self.card("👥 Mükellefler", "0", "Kayıtlı mükellef"))
-        cards.addWidget(self.card("📂 Evrak", "0", "Takipte evrak"))
+        cards.addWidget(self.card("👥 Mükellefler", str(count_clients()), "Kayıtlı mükellef"))
+        cards.addWidget(self.card("📁 Evrak", str(count_documents()), "Takipte evrak"))
 
         activity = QFrame()
         activity.setStyleSheet("background-color: white; border-radius: 14px; padding: 22px;")

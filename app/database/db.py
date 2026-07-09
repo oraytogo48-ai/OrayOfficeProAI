@@ -165,3 +165,19 @@ def delete_document(document_id):
 
     conn.commit()
     conn.close()
+def count_documents():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM documents")
+    count = cur.fetchone()[0]
+    conn.close()
+    return count
+def count_clients():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT COUNT(*) FROM clients")
+    count = cur.fetchone()[0]
+
+    conn.close()
+    return count
