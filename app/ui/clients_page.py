@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit,
-    QTextEdit, QPushButton, QTableWidget, QTableWidgetItem,
-    QFrame, QMessageBox, QHeaderView
+    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
+    QLineEdit, QTextEdit, QPushButton, QTableWidget,
+    QTableWidgetItem, QFrame, QMessageBox, QHeaderView, QAbstractItemView
 )
 
 from app.database.db import (
@@ -18,46 +18,50 @@ class ClientsPage(QWidget):
         self.load_clients()
 
     def build_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(40, 35, 40, 35)
-        layout.setSpacing(14)
+        main = QVBoxLayout(self)
+        main.setContentsMargins(40, 35, 40, 35)
+        main.setSpacing(14)
 
         title = QLabel("Mükellefler")
         title.setStyleSheet("font-size:34px; font-weight:bold; color:#111827;")
-        layout.addWidget(title)
+        main.addWidget(title)
 
         form = QFrame()
-        form.setStyleSheet("background:white; border-radius:14px; padding:18px;")
+        form.setObjectName("formCard")
         form_layout = QVBoxLayout(form)
+        form_layout.setSpacing(12)
 
-        row1 = QHBoxLayout()
+        grid = QGridLayout()
+        grid.setSpacing(12)
+
         self.name = QLineEdit()
         self.name.setPlaceholderText("Firma / Mükellef adı")
+
         self.tax_no = QLineEdit()
         self.tax_no.setPlaceholderText("Vergi No / TCKN")
+
         self.tax_office = QLineEdit()
         self.tax_office.setPlaceholderText("Vergi Dairesi")
-        row1.addWidget(self.name)
-        row1.addWidget(self.tax_no)
-        row1.addWidget(self.tax_office)
 
-        row2 = QHBoxLayout()
         self.phone = QLineEdit()
         self.phone.setPlaceholderText("Telefon")
+
         self.email = QLineEdit()
         self.email.setPlaceholderText("E-posta")
+
         self.contact = QLineEdit()
         self.contact.setPlaceholderText("Yetkili kişi")
-        row2.addWidget(self.phone)
-        row2.addWidget(self.email)
-        row2.addWidget(self.contact)
+
+        grid.addWidget(self.name, 0, 0)
+        grid.addWidget(self.tax_no, 0, 1)
+        grid.addWidget(self.tax_office, 0, 2)
+        grid.addWidget(self.phone, 1, 0)
+        grid.addWidget(self.email, 1, 1)
+        grid.addWidget(self.contact, 1, 2)
 
         self.notes = QTextEdit()
         self.notes.setPlaceholderText("Notlar")
         self.notes.setFixedHeight(80)
-
-        button_row = QHBoxLayout()
-        button_row.addStretch()
 
         self.save_btn = QPushButton("Kaydet")
         self.update_btn = QPushButton("Güncelle")
@@ -69,31 +73,35 @@ class ClientsPage(QWidget):
         self.delete_btn.clicked.connect(self.delete_selected_client)
         self.clear_btn.clicked.connect(self.clear_form)
 
-        button_row.addWidget(self.save_btn)
-        button_row.addWidget(self.update_btn)
-        button_row.addWidget(self.delete_btn)
-        button_row.addWidget(self.clear_btn)
+        buttons = QHBoxLayout()
+        buttons.addStretch()
+        buttons.addWidget(self.save_btn)
+        buttons.addWidget(self.update_btn)
+        buttons.addWidget(self.delete_btn)
+        buttons.addWidget(self.clear_btn)
 
-        form_layout.addLayout(row1)
-        form_layout.addLayout(row2)
+        form_layout.addLayout(grid)
         form_layout.addWidget(self.notes)
-        form_layout.addLayout(button_row)
+        form_layout.addLayout(buttons)
 
-        layout.addWidget(form)
+        main.addWidget(form)
 
         self.search = QLineEdit()
         self.search.setPlaceholderText("Mükellef ara...")
         self.search.textChanged.connect(self.load_clients)
-        layout.addWidget(self.search)
+        main.addWidget(self.search)
 
         self.table = QTableWidget()
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([
             "ID", "Ad", "Vergi No", "Vergi Dairesi", "Telefon", "E-posta", "Yetkili"
         ])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.cellClicked.connect(self.table_clicked)
-        layout.addWidget(self.table)
+        main.addWidget(self.table)
 
         self.apply_style()
 
@@ -124,13 +132,9 @@ class ClientsPage(QWidget):
 
         self.table.setRowCount(len(rows))
 
-        for row_index, row_data in enumerate(rows):
-            for col_index, value in enumerate(row_data):
-                self.table.setItem(
-                    row_index,
-                    col_index,
-                    QTableWidgetItem(str(value))
-                )
+        for r, row_data in enumerate(rows):
+            for c, value in enumerate(row_data):
+                self.table.setItem(r, c, QTableWidgetItem(str(value)))
 
     def table_clicked(self, row, column):
         item = self.table.item(row, 0)
@@ -153,10 +157,6 @@ class ClientsPage(QWidget):
     def update_selected_client(self):
         if not self.selected_id:
             QMessageBox.warning(self, "Seçim yok", "Güncellemek için tablodan bir mükellef seç.")
-            return
-
-        if not self.name.text().strip():
-            QMessageBox.warning(self, "Eksik bilgi", "Mükellef adı zorunludur.")
             return
 
         update_client(
@@ -201,13 +201,21 @@ class ClientsPage(QWidget):
 
     def apply_style(self):
         self.setStyleSheet("""
-        QWidget { background:#f3f4f6; }
+        QWidget {
+            background:#f3f4f6;
+        }
+
+        QFrame#formCard {
+            background:white;
+            border-radius:14px;
+            padding:18px;
+        }
 
         QLineEdit, QTextEdit {
             background:white;
             border:1px solid #cbd5e1;
             border-radius:8px;
-            padding:8px;
+            padding:9px;
             font-size:14px;
         }
 
@@ -219,6 +227,7 @@ class ClientsPage(QWidget):
             padding:10px 18px;
             font-size:15px;
             font-weight:bold;
+            min-width:90px;
         }
 
         QPushButton:hover {
